@@ -159,7 +159,10 @@ int main(int argc, char* argv[]) {
     if (cmdLineKey.bQuietMode == 0) {
         std::string sTmp("");
         dupCharToStr(sTmp, '=', 33);
-        std::cout << sTmp << "[ PARAMETERS ]" << sTmp;
+        sTmp += "[ PARAMETERS ]";
+        dupCharToStr(sTmp, '=', 23);
+        sTmp += "[_][V][X]=";
+        std::cout << sTmp;
 
         sTmp = '+';
         dupCharToStr(sTmp, '-', 17);
