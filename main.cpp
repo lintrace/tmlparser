@@ -167,16 +167,16 @@ int main(int argc, char* argv[]) {
         dupCharToStr(sTmp, '-', 61);
 
         printf("\n| T-MAIL log file | %-61s\n"
-               "%s\n| Output filename | %-61s\n"
-               "%s\n| Filter by SID   | %s\n"
-               "%s\n| Exclude IP by   | %s\n", cmdLineKey.sInputFile.data(), sTmp.data(),
-               cmdLineKey.sOutputFile.data(), sTmp.data(),
-               (cmdLineKey.sMaskSID.empty()) ?
-                   "none - will be shown all connections!" :
-                   cmdLineKey.sMaskSID.data(), sTmp.data(),
-               (cmdLineKey.sExcludeIP.empty()) ?
-                   "none (result will not filtered by IP addresses)" :
-                   cmdLineKey.sExcludeIP.data());
+                "%s\n| Output filename | %-61s\n"
+                "%s\n| Filter by SID   | %s\n"
+                "%s\n| Exclude IP by   | %s\n", cmdLineKey.sInputFile.data(), sTmp.data(),
+                cmdLineKey.sOutputFile.data(), sTmp.data(),
+                (cmdLineKey.sMaskSID.empty()) ?
+                        "none - will be shown all connections!" :
+                        cmdLineKey.sMaskSID.data(), sTmp.data(),
+                (cmdLineKey.sExcludeIP.empty()) ?
+                        "none (result will not filtered by IP addresses)" :
+                        cmdLineKey.sExcludeIP.data());
 
         sTmp = "";
         dupCharToStr(sTmp, '-', 80);
