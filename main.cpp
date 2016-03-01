@@ -233,19 +233,16 @@ int main(int argc, char* argv[]) {
         std::string sSysOp;
         std::string sSID;
         std::string sRemoteDateTime;
-    } logFields;
-
-    struct {
-        unsigned ConnectIP:    1;
-        unsigned SysOp:        1;
-        unsigned RemoteDate:   1;
-        unsigned System:       1;
+        unsigned bConnectIP:    1;
+        unsigned bSysOp:        1;
+        unsigned bRemoteDate:   1;
+        unsigned bSystem:       1;
         void reset()
         {
-            ConnectIP = SysOp = RemoteDate = System = 0;
+            bConnectIP = bSysOp = bRemoteDate = bSystem = 0;
             return;
         }
-    } validLogFields;
+    } logFields;   
 
     // Reading input file by lines from begin to the end
     while (!f_infile.eof()) {
@@ -253,50 +250,50 @@ int main(int argc, char* argv[]) {
         sInputString = lpLineBuffer;
 
         if (sInputString.find("Incoming call: CONNECT ", 0) != std::string::npos) {
-            validLogFields.reset();
-            validLogFields.ConnectIP = 1;
+            logFields.reset();
+            logFields.bConnectIP = 1;
             logFields.sLocalDateTime = sInputString.substr(0, 14);
             logFields.sIncomingIP = sInputString.substr(sInputString.find("TCP/IP/") + 7, sInputString.find_last_of('/') - (sInputString.find("TCP/IP/") + 7 ));
 
             if (!cmdLineKey.sExcludeIP.empty() && sInputString.find(cmdLineKey.sExcludeIP)!=std::string::npos) {
-                validLogFields.reset();
+                logFields.reset();
             }
             continue;
         } else {
-            if (validLogFields.ConnectIP == true) {
-                if (validLogFields.SysOp == 0 && sInputString.find("SysOp:") != std::string::npos) {
+            if (logFields.bConnectIP == 1) {
+                if (logFields.bSysOp == 0 && sInputString.find("SysOp:") != std::string::npos) {
                     logFields.sSysOp = sInputString.substr(
                             sInputString.find("SysOp:")+7,
                             sInputString.find_last_of(',')-(sInputString.find("SysOp:")+7));
-                    validLogFields.SysOp = 1;
+                    logFields.bSysOp = 1;
                     continue;
                 }
 
-                if (validLogFields.RemoteDate == 0 &&
+                if (logFields.bRemoteDate == 0 &&
                         sInputString.find("Remote date") != std::string::npos) {
                     logFields.sRemoteDateTime = sInputString.substr(
                             sInputString.find("Remote date") + 20);
-                    validLogFields.RemoteDate = 1;
+                    logFields.bRemoteDate = 1;
                     continue;
                 }
 
-                if (validLogFields.System == 0 && sInputString.find("System:") != std::string::npos) {
+                if (logFields.bSystem == 0 && sInputString.find("System:") != std::string::npos) {
                     logFields.sSID = sInputString.substr(sInputString.find("System:") + 8,
                             sInputString.find(',')-(sInputString.find("System:") + 8));
                     strToUpperCase(logFields.sSID);
 
                     if (!cmdLineKey.sMaskSID.empty() && logFields.sSID.compare(cmdLineKey.sMaskSID)) {
-                        validLogFields.reset();
+                        logFields.reset();
                         continue;
                     }
 
                     // Go to new line in the log file if not all fields been found
-                    if (validLogFields.ConnectIP == 0 && validLogFields.RemoteDate == 0 &&
-                            validLogFields.SysOp == 0 && validLogFields.System == 0) continue;
+                    if (logFields.bConnectIP == 0 && logFields.bRemoteDate == 0 &&
+                            logFields.bSysOp == 0 && logFields.bSystem == 0) continue;
 
                     f_outfile << logFields.sLocalDateTime << '#' << logFields.sSID << '#' << logFields.sIncomingIP
                             << '#' << logFields.sSysOp << '#' << logFields.sRemoteDateTime << std::endl;
-                    validLogFields.reset();
+                    logFields.reset();
                     iStatTotalConn++;
                     if (cmdLineKey.bQuietMode == 0) {
                         printf("\rCounter: [%10i]  Client: [%9s] %-80s",
