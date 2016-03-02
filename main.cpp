@@ -112,7 +112,7 @@ int main(int argc, char* argv[]) {
     if (cmdLineKey.sMaskSID.empty() && cmdLineKey.bVerboseMode) {
         std::cout << "Do you really want to get a list of ALL customers without filtering by SID? (y/n)"
                   << std::endl;
-        // Waiting and check of the answer
+        // Waiting and check the answer
         char chUserIn;
         std::cin.get(chUserIn);
         if (std::tolower(chUserIn) != 'y') return (1);
