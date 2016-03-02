@@ -36,21 +36,23 @@ const unsigned int INPUT_LINE_BUFFER_LEN = 1024;
 
 int main(int argc, char* argv[]) {
 
-    // List of the arguments for command line
-    struct CommandLineArg {
-    	unsigned bVerboseMode:   1;
-    	unsigned bAppendMode:    1;
-    	std::string sInputFile;
-    	std::string sOutputFile;
-    	std::string sMaskSID;
-    	std::string sExcludeIP;
-	CommandLineArg() {
-	    bVerboseMode = bAppendMode = 0;
-	    sInputFile = sOutputFile = sMaskSID = sExcludeIP = "";
-            }
-    } cmdLineKey;
+	// List of the arguments for command line
+	struct CommandLineArg {
+		unsigned bVerboseMode:   1;
+		unsigned bAppendMode:    1;
+		char chDelimiter;
+		std::string sInputFile;
+		std::string sOutputFile;
+		std::string sMaskSID;
+		std::string sExcludeIP;
+		CommandLineArg() {
+			bVerboseMode = bAppendMode = 0;
+			sInputFile = sOutputFile = sMaskSID = sExcludeIP = "";
+			chDelimiter = '#';
+		}
+	} cmdLineKey;
 
-    std::string sArgument = "";
+	std::string sArgument = "";
 
     // If the command-line arguments are not passed then exit with help output
     if (argc == 1) {
@@ -63,30 +65,34 @@ int main(int argc, char* argv[]) {
         // Search keys (when argument begins with '-') and parameters.
         if (sArgument.size() > 1 && sArgument.at(0) == '-') {
             switch (tolower(sArgument.at(1))) {
-            case 'i':
+            case 'i': // input log file
                 if ((argN+1)<argc && argv[argN+1][0]!='-'){
                     cmdLineKey.sInputFile = argv[++argN];
                 }
                 break;
-            case 'o':
+            case 'o': // output file (report)
                 if ((argN+1)<argc && argv[argN+1][0]!='-'){
                     cmdLineKey.sOutputFile = argv[++argN];
                 }
                 break;
-            case 's':
+            case 's': // SID for search
                 if ((argN+1)<argc && argv[argN+1][0]!='-'){
                     cmdLineKey.sMaskSID = argv[++argN];
                 }
                 break;
-            case 'e':
+            case 'e': // Exclude IP from log
                 if ((argN+1)<argc && argv[argN+1][0]!='-'){
                     cmdLineKey.sExcludeIP = argv[++argN];
                 }
+            case 'd': // Delimiter for fields of output file
+                if ((argN+1)<argc && argv[argN+1][0]!='-'){
+                    cmdLineKey.chDelimiter = argv[++argN][0];
+                }
                 break;
-            case 'v':
+            case 'v': // Verbose mode
                 cmdLineKey.bVerboseMode = 1;
                 break;
-            case 'a':
+            case 'a': // Append to output file (overwrite by default)
                 cmdLineKey.bAppendMode = 1;
                 break;
             default:  // For the -h (help) and any unknown options
@@ -153,24 +159,26 @@ int main(int argc, char* argv[]) {
         std::string sTmp = '+' + dupCharToStr('-', 17) + '+' + dupCharToStr('-', 61);
 
         printf("\n| T-MAIL log file | %-61s\n"
-                "%s\n| Output filename | %-61s\n"
-                "%s\n| Filter by SID   | %s\n"
-                "%s\n| Exclude IP by   | %s\n", cmdLineKey.sInputFile.data(), sTmp.data(),
-                cmdLineKey.sOutputFile.data(), sTmp.data(),
-                (cmdLineKey.sMaskSID.empty()) ?
-                        "none - will be shown all connections!" :
-                        cmdLineKey.sMaskSID.data(), sTmp.data(),
-                (cmdLineKey.sExcludeIP.empty()) ?
-                        "none (result will not filtered by IP addresses)" :
-                        cmdLineKey.sExcludeIP.data());
-
-        printf("%s\n| %s\n",
-        		dupCharToStr('-', 80).data(),
-                (cmdLineKey.bAppendMode) ?
-                        "Output data will append to existing output file" :
-                        "Output file will be overwritten if exist");
-
-        std::cout << dupCharToStr('=', 80) << std::endl << std::endl;
+               "%s\n| Output filename | %-61s\n"
+               "%s\n| Filter by SID   | %s\n"
+               "%s\n| Exclude IP by   | %s\n"
+               "%s\n| Delimiter is    | symbol '%c'\n"
+               "%s\n| %s\n"
+               "%s\n\n",
+               cmdLineKey.sInputFile.data(), sTmp.data(),
+               cmdLineKey.sOutputFile.data(), sTmp.data(),
+               cmdLineKey.sMaskSID.empty() ?
+                         "none - will be shown all connections!" :
+                         cmdLineKey.sMaskSID.data(), sTmp.data(),
+               cmdLineKey.sExcludeIP.empty() ?
+                         "none (result will not filtered by IP addresses)" :
+                         cmdLineKey.sExcludeIP.data(), sTmp.data(),
+               cmdLineKey.chDelimiter,
+               dupCharToStr('-', 80).data(),
+               cmdLineKey.bAppendMode ?
+				         "Output data will append to existing output file" :
+				         "Output file will be overwritten if exist",
+               dupCharToStr('=', 80).data());
     }
 
     //--[MAIN LOGIC FOR THE GENERATING OUTPUT] --
@@ -277,8 +285,11 @@ int main(int argc, char* argv[]) {
                             !logFields.bSysOp && !logFields.bSystem) continue;
 
                     // All fields been found. Write at the back of the output file.
-                    f_outfile << logFields.sLocalDateTime << '#' << logFields.sSID << '#' << logFields.sIncomingIP
-                            << '#' << logFields.sSysOp << '#' << logFields.sRemoteDateTime << std::endl;
+                    f_outfile << logFields.sLocalDateTime << cmdLineKey.chDelimiter
+                    		  << logFields.sSID << cmdLineKey.chDelimiter
+							  << logFields.sIncomingIP << cmdLineKey.chDelimiter
+                              << logFields.sSysOp << cmdLineKey.chDelimiter
+							  << logFields.sRemoteDateTime << std::endl;
                     logFields.reset();
                     iStatTotalConn++;
                     if (cmdLineKey.bVerboseMode) {
@@ -319,6 +330,7 @@ void printUsage(void) {
          << "   -e IP          specify filter to EXCLUDE IP from the input log file" << std::endl
          << "                  to example: -e 10.0.0. will exclude all IP in range 10.0.0.xxx" << std::endl
 		 << "                  is useful to exclude local connections to server" << std::endl
+		 << "   -d             delimiter of the fields in output file ('#' by default)" << std::endl
          << std::endl
          << "   -v             verbose mode (give more information about each stage)" << std::endl
          << std::endl

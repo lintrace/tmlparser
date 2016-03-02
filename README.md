@@ -32,7 +32,8 @@ TMLParser usage:
    -s SID         specify filter by SID for the input log file
    -e IP          specify filter to EXCLUDE IP from the input log file
                   to example: -e 10.0.0. will exclude all IP in range 10.0.0.xxx
-                  Useful to exclude local connections to server
+                  is useful to exclude local connections to server
+   -d             delimiter of the fields in output file ('#' by default)
                   
    -v             verbose mode (give more information about each stage)
          
