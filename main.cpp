@@ -57,7 +57,7 @@ int main(int argc, char* argv[]) {
 
     std::string sArgument = "";
 
-    // If the command-line arguments are not passed then exit with the help output
+    // If the command-line arguments are not passed then exit with help output
     if (argc == 1) {
         printUsage();
         return (1);
@@ -121,12 +121,9 @@ int main(int argc, char* argv[]) {
         // Waiting and check of the answer
         char chUserIn;
         std::cin.get(chUserIn);
-        if (std::tolower(chUserIn) != 'y') {
-            std::cout << "OK, i'm exiting...\n";
-            return (1);
-        }
-
+        if (std::tolower(chUserIn) != 'y') return (1);
     }
+
     //-----------[ OPEN INPUT AND OUTPUT FILES ]------------
     std::ifstream f_infile;
     std::ofstream f_outfile;
@@ -142,13 +139,16 @@ int main(int argc, char* argv[]) {
 
     // Create output file (truncate or append to existing)
     if (cmdLineKey.bAppendMode) {
-        f_outfile.open(cmdLineKey.sOutputFile.data(), std::ios_base::out | std::ios_base::app);
+        f_outfile.open(cmdLineKey.sOutputFile.data(), 
+                       std::ios_base::out | std::ios_base::app);
     } else {
-        f_outfile.open(cmdLineKey.sOutputFile.data(), std::ios_base::out | std::ios_base::trunc);
+        f_outfile.open(cmdLineKey.sOutputFile.data(),
+                       std::ios_base::out | std::ios_base::trunc);
     }
 
     if (!f_outfile.is_open()) {
-        std::cout << "Error: Could not create output file: " << cmdLineKey.sOutputFile << std::endl;
+        std::cout << "Error: Could not create output file: " 
+                  << cmdLineKey.sOutputFile << std::endl;
         f_infile.close();
         return (2);
     }
@@ -279,6 +279,7 @@ int main(int argc, char* argv[]) {
                                         sInputString.find(',')-(sInputString.find("System:") + 8)
                                         );
                     strToUpperCase(logFields.sSID);
+                    logFields.bSystem = 1;
 
                     if (!cmdLineKey.sMaskSID.empty() && logFields.sSID.compare(cmdLineKey.sMaskSID)) {
                         logFields.reset();
