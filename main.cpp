@@ -55,7 +55,7 @@ int main(int argc, char* argv[]) {
 
     unsigned int iStatTotalConn = 0;
 
-    //std::string sArgument = "";
+    std::string sArgument = "";
 
     // If the command-line arguments are not passed then exit with the help output
     if (argc == 1) {
