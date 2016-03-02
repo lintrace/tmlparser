@@ -20,7 +20,8 @@ void printUsage(void);
 void strToUpperCase(std::string &);
 
 // Duplicate char to string N times
-void dupCharToStr(std::string & /*source string*/, char /*char to duplicating*/, unsigned int /*Num times*/);
+//void dupCharToStr(std::string & /*source string*/, char /*char to duplicating*/, unsigned int /*Num times*/);
+std::string dupCharToStr(char /*char to duplicating*/, unsigned int /*Num times*/);
 
 
 #endif /* MAIN_H_ */

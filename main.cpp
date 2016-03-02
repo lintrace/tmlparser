@@ -33,27 +33,22 @@
 // Length of the buffer for the input line from T-Mail log file
 const unsigned int INPUT_LINE_BUFFER_LEN = 1024;
 
-// List of the arguments for command line
-struct CommandLineArg {
-    unsigned bQuietMode:     1;
-    unsigned bAppendMode:    1;
-    std::string sInputFile;
-    std::string sOutputFile;
-    std::string sMaskSID;
-    std::string sExcludeIP;
-    CommandLineArg() {
-        bQuietMode = bAppendMode = 0;
-        sInputFile = sOutputFile = sMaskSID = sExcludeIP = "";
-    }
-};
 
 int main(int argc, char* argv[]) {
-    char chKey;
 
-    char * lpLineBuffer = NULL;
-    CommandLineArg cmdLineKey;
-
-    unsigned int iStatTotalConn = 0;
+	// List of the arguments for command line
+	struct CommandLineArg {
+	    unsigned bVerboseMode:   1;
+	    unsigned bAppendMode:    1;
+	    std::string sInputFile;
+	    std::string sOutputFile;
+	    std::string sMaskSID;
+	    std::string sExcludeIP;
+	    CommandLineArg() {
+	        bVerboseMode = bAppendMode = 0;
+	        sInputFile = sOutputFile = sMaskSID = sExcludeIP = "";
+	    }
+	} cmdLineKey;
 
     std::string sArgument = "";
 
@@ -66,9 +61,8 @@ int main(int argc, char* argv[]) {
     for (int argN = 1; argN < argc; argN++) {
         sArgument = argv[argN];
         // Search keys (when argument begins with '-') and parameters.
-        if (sArgument.at(0) == '-') {
-            chKey = tolower(sArgument.at(1));
-            switch (chKey) {
+        if (sArgument.size() > 1 && sArgument.at(0) == '-') {
+            switch (tolower(sArgument.at(1))) {
             case 'i':
                 if ((argN+1)<argc && argv[argN+1][0]!='-'){
                     cmdLineKey.sInputFile = argv[++argN];
@@ -89,8 +83,8 @@ int main(int argc, char* argv[]) {
                     cmdLineKey.sExcludeIP = argv[++argN];
                 }
                 break;
-            case 'q':
-                cmdLineKey.bQuietMode = 1;
+            case 'v':
+                cmdLineKey.bVerboseMode = 1;
                 break;
             case 'a':
                 cmdLineKey.bAppendMode = 1;
@@ -115,7 +109,7 @@ int main(int argc, char* argv[]) {
         return (2);
     }
 
-    if (cmdLineKey.sMaskSID.empty() && cmdLineKey.bQuietMode == 0) {
+    if (cmdLineKey.sMaskSID.empty() && cmdLineKey.bVerboseMode) {
         std::cout << "Do you really want to get a list of ALL customers without filtering by SID? (y/n)"
                   << std::endl;
         // Waiting and check of the answer
@@ -125,10 +119,9 @@ int main(int argc, char* argv[]) {
     }
 
     //-----------[ OPEN INPUT AND OUTPUT FILES ]------------
-    std::ifstream f_infile;
-    std::ofstream f_outfile;
 
     // Open input file
+    std::ifstream f_infile;
     f_infile.open(cmdLineKey.sInputFile.data(), std::ios_base::in);
     if (!f_infile.is_open()) {
         std::cout << "Error: Input t-mail.log file is not found!"
@@ -138,6 +131,7 @@ int main(int argc, char* argv[]) {
     }
 
     // Create output file (truncate or append to existing)
+    std::ofstream f_outfile;
     if (cmdLineKey.bAppendMode) {
         f_outfile.open(cmdLineKey.sOutputFile.data(), 
                        std::ios_base::out | std::ios_base::app);
@@ -154,15 +148,9 @@ int main(int argc, char* argv[]) {
     }
     //-----------[ PRINT LIST ALL PARAMETERS ]-------------
     // Print table with all used parameters if not selected quiet mode
-    if (!cmdLineKey.bQuietMode) {
-        std::string sTmp("");
-        dupCharToStr(sTmp, '=', 33);
-        std::cout << sTmp << "[ PARAMETERS ]" << sTmp;
-
-        sTmp = '+';
-        dupCharToStr(sTmp, '-', 17);
-        sTmp += '+';
-        dupCharToStr(sTmp, '-', 61);
+    if (cmdLineKey.bVerboseMode) {
+        std::cout << dupCharToStr('=', 33) << "[ PARAMETERS ]" << dupCharToStr('=', 33);
+        std::string sTmp = '+' + dupCharToStr('-', 17) + '+' + dupCharToStr('-', 61);
 
         printf("\n| T-MAIL log file | %-61s\n"
                 "%s\n| Output filename | %-61s\n"
@@ -176,21 +164,13 @@ int main(int argc, char* argv[]) {
                         "none (result will not filtered by IP addresses)" :
                         cmdLineKey.sExcludeIP.data());
 
-        sTmp = "";
-        dupCharToStr(sTmp, '-', 80);
-
-        printf("%s\n| %s\n%s\n", sTmp.data(),
+        printf("%s\n| %s\n",
+        		dupCharToStr('-', 80).data(),
                 (cmdLineKey.bAppendMode) ?
                         "Output data will append to existing output file" :
-                        "Output file will be overwritten if exist",
-                sTmp.data());
+                        "Output file will be overwritten if exist");
 
-        std::cout
-                << "| (*) Job will be done more faster if you use quiet mode (-q)!\n";
-
-        sTmp = "";
-        dupCharToStr(sTmp, '=', 80);
-        std::cout << sTmp << std::endl << std::endl;
+        std::cout << dupCharToStr('=', 80) << std::endl << std::endl;
     }
 
     //--[MAIN LOGIC FOR THE GENERATING OUTPUT] --
@@ -206,7 +186,7 @@ int main(int argc, char* argv[]) {
         IP was found in this list then return to Stage 1.
 
      3) Collecting all interested us fields such as IP, SysOp, Date, System
-        by moving down  by lines in input log file.
+        by moving down by lines in input log file.
 
      4) If was found all fields from the Stage 3 then they pass to a output file
         with use of char '#' as delimiter and execution start again from Stage 1
@@ -216,14 +196,8 @@ int main(int argc, char* argv[]) {
         for established connection then all parameters need be reset, stage 5
         will be interrupted  and execution will return to a Stage 1
 
-        PS: Local date and time given from the 'CONNECT' line
+        PS: Local date and time we receive from the 'CONNECT' line
      */
-
-
-    // Create buffer for reading strings from input file
-    lpLineBuffer = (char *) calloc(INPUT_LINE_BUFFER_LEN, sizeof(char));
-
-     std::string  sInputString = "";
 
     struct {
         std::string sLocalDateTime;
@@ -240,18 +214,29 @@ int main(int argc, char* argv[]) {
             bConnectIP = bSysOp = bRemoteDate = bSystem = 0;
             return;
         }
-    } logFields;   
+    } logFields;
+
+    // Create buffer for reading strings from input file
+    char * lpLineBuffer = (char *) calloc(INPUT_LINE_BUFFER_LEN, sizeof(char));
+    std::string  sInputString = "";	 // String from input file (from buffer)
+    unsigned int iStatTotalConn = 0; // Counter total connections of Customer
+                                     // (equals the lines in output file)
 
     // Reading input file by lines from begin to the end
     while (!f_infile.eof()) {
         f_infile.getline(lpLineBuffer, INPUT_LINE_BUFFER_LEN);
         sInputString = lpLineBuffer;
-
+        // Searching for CONNECT in log to begin a work
         if (sInputString.find("Incoming call: CONNECT", 0) != std::string::npos) {
             logFields.reset();
+            // Set the flag what connection is been found
             logFields.bConnectIP = 1;
+            // Set local date and time field from line 'CONNECTION'
             logFields.sLocalDateTime = sInputString.substr(0, 14);
-            logFields.sIncomingIP = sInputString.substr(sInputString.find("TCP/IP/") + 7, sInputString.find_last_of('/') - (sInputString.find("TCP/IP/") + 7 ));
+            // Getting IP from 'CONNECTION'
+            logFields.sIncomingIP = sInputString.substr(sInputString.find("TCP/IP/") + 7,
+            		                                    sInputString.find_last_of('/') - (sInputString.find("TCP/IP/") + 7 )
+														);
 
             if (!cmdLineKey.sExcludeIP.empty() && sInputString.find(cmdLineKey.sExcludeIP)!=std::string::npos) {
                 logFields.reset();
@@ -259,6 +244,7 @@ int main(int argc, char* argv[]) {
             continue;
         } else {
             if (logFields.bConnectIP) {
+            	// If connection was found we looking in log the other fields
                 if (!logFields.bSysOp && sInputString.find("SysOp:") != std::string::npos) {
                     logFields.sSysOp = sInputString.substr(
                             sInputString.find("SysOp:")+7,
@@ -290,11 +276,12 @@ int main(int argc, char* argv[]) {
                     if (!logFields.bConnectIP && !logFields.bRemoteDate &&
                             !logFields.bSysOp && !logFields.bSystem) continue;
 
+                    // All fields been found. Write at the back of the output file.
                     f_outfile << logFields.sLocalDateTime << '#' << logFields.sSID << '#' << logFields.sIncomingIP
                             << '#' << logFields.sSysOp << '#' << logFields.sRemoteDateTime << std::endl;
                     logFields.reset();
                     iStatTotalConn++;
-                    if (!cmdLineKey.bQuietMode) {
+                    if (cmdLineKey.bVerboseMode) {
                         printf("\rCounter: [%10i]  Client: [%9s] %-80s",
                                 iStatTotalConn,
                                 logFields.sSID.data(),
@@ -309,11 +296,12 @@ int main(int argc, char* argv[]) {
     f_outfile.close();
     free(lpLineBuffer);
 
-    if (cmdLineKey.bQuietMode == 0)
+    if (cmdLineKey.bVerboseMode) {
         printf("\n\n%s\n",
                 (iStatTotalConn) ?
                         "Work complete!" :
                         "Sorry, but nothing found by specified SID! :-(");
+    }
     return (0);
 }
 
@@ -323,15 +311,16 @@ void printUsage(void) {
          << std::endl
          << "TMLParser usage:" << std::endl
          << "   -h or --help   print out this message" << std::endl
-         << "   -i filename    specify filename for the input log file from T-MAIL (usually t-mail.log)" << std::endl
-         << "   -o filename    specify filename for the output report" << std::endl
+         << "   -i filename    specify filename for the input log file from T-MAIL" << std::endl
+         << "                  (usually t-mail.log)" << std::endl
+         << "   -o filename    specify filename for the output report (out.txt, eg)" << std::endl
          << "   -a             append mode (do not overwrite output file if exist)" << std::endl
          << "   -s SID         specify filter by SID for the input log file" << std::endl
          << "   -e IP          specify filter to EXCLUDE IP from the input log file" << std::endl
          << "                  to example: -e 10.0.0. will exclude all IP in range 10.0.0.xxx" << std::endl
+		 << "                  is useful to exclude local connections to server" << std::endl
          << std::endl
-         << "   -q             quiet mode (silent mode with suppressing messages)" << std::endl
-         << "                  With this option job will be done is very fast!" << std::endl
+         << "   -v             verbose mode (give more information about each stage)" << std::endl
          << std::endl
          << "tmlparser -i d:\\t-mail.log -o d:\\report.txt -s 00000001" << std::endl
          << "tmlparser -i d:\\t-mail.log -o d:\\report.txt -s 7P000001 -e 10.0." << std::endl
@@ -352,9 +341,17 @@ void strToUpperCase(std::string & sStr) {
 }
 
 // Duplicate char ch in string sStr uiDup times
-void dupCharToStr(std::string & sStr, char ch, unsigned int uiDup) {
+//void dupCharToStr(std::string & sStr, char ch, unsigned int uiDup) {
+//    while (uiDup--) {
+//        sStr += ch;
+//    }
+//    return;
+//}
+
+std::string dupCharToStr(char ch, unsigned int uiDup) {
+	std::string _sTmp;
     while (uiDup--) {
-        sStr += ch;
+        _sTmp += ch;
     }
-    return;
+    return _sTmp;
 }
