@@ -24,33 +24,33 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>
 -------------------------------------------------------------
 
 TMLParser usage:
-   -h or --help   print out help
-   -i filename    specify filename for the input log file from T-MAIL
-                  (usually t-mail.log)
-   -o filename    specify filename for the output report (out.txt, eg)
-   -a             append mode (do not overwrite output file if exist)
-   -s SID         specify filter by SID for the input log file
-   -e IP          specify filter to EXCLUDE IP from the input log file
-                  to example: -e 10.0.0. will exclude all IP in range 10.0.0.xxx
-                  is useful to exclude local connections to server
-   -d             delimiter of the fields in output file ('#' by default)
-                  
-   -v             verbose mode (give more information about each stage)
-         
-Example:         
-tmlparser -i d:\t-mail.log -o d:\report.txt -s 00000001
-Will search connections for SID=00000001 in log file d:\t-mail.log
-with saving result in output file d:\repotr.txt
-
-tmlparser -i d:\t-mail.log -o d:\out.txt -s 7P000001 -e 10.0.
-Will search connections for SID=7P000001 in log file d:\t-mail.log
-with saving result in file d:\out.txt excluding connections when
-IP begins at 10.0.
-
-Return codes:
-   0 - successful completion of job
-   1 - non-critical error
-   2 - critical error
+	   -h or --help   print out help
+	   -i filename    specify filename for the input log file from T-MAIL
+	                  (usually t-mail.log)
+	   -o filename    specify filename for the output report (out.txt, eg)
+	   -a             append mode (do not overwrite output file if exist)
+	   -s SID         specify filter by SID for the input log file
+	   -e IP          specify filter to EXCLUDE IP from the input log file
+	                  to example: -e 10.0.0. will exclude all IP in range 10.0.0.xxx
+	                  is useful to exclude local connections to server
+	   -d             delimiter of the fields in output file ('#' by default)
+	                  
+	   -v             verbose mode (give more information about each stage)
+	         
+	Example:         
+	tmlparser -i d:\t-mail.log -o d:\report.txt -s 00000001
+	Will search connections for SID=00000001 in log file d:\t-mail.log
+	with saving result in output file d:\repotr.txt
+	
+	tmlparser -i d:\t-mail.log -o d:\out.txt -s 7P000001 -e 10.0.
+	Will search connections for SID=7P000001 in log file d:\t-mail.log
+	with saving result in file d:\out.txt excluding connections when
+	IP begins at 10.0.
+	
+	Return codes:
+	   0 - successful completion of job
+	   1 - non-critical error
+	   2 - critical error
    
 -------------------------------------------------------------
 
