@@ -30,8 +30,6 @@
 
 #include "main.h"
 
-
-
 // Length of the buffer for the input line from T-Mail log file
 const unsigned int INPUT_LINE_BUFFER_LEN = 1024;
 
@@ -57,7 +55,7 @@ int main(int argc, char* argv[]) {
 
     unsigned int iStatTotalConn = 0;
 
-    std::string sArgument = "";
+    //std::string sArgument = "";
 
     // If the command-line arguments are not passed then exit with the help output
     if (argc == 1) {
@@ -67,7 +65,7 @@ int main(int argc, char* argv[]) {
 
     for (int argN = 1; argN < argc; argN++) {
         sArgument = argv[argN];
-        // Search keys (when argument begins with '-') and parameters. Each key may have only one parameter!
+        // Search keys (when argument begins with '-') and parameters.
         if (sArgument.at(0) == '-') {
             chKey = tolower(sArgument.at(1));
             switch (chKey) {
@@ -108,7 +106,7 @@ int main(int argc, char* argv[]) {
     // Checking parameters
     if (cmdLineKey.sInputFile.empty())  {
         std::cout << "Error: You must specify the correct log file from T-MAIL with key -i"
-                << std::endl;
+                  << std::endl;
         return (2);
     }
 
@@ -119,7 +117,7 @@ int main(int argc, char* argv[]) {
 
     if (cmdLineKey.sMaskSID.empty() && cmdLineKey.bQuietMode == 0) {
         std::cout << "Do you really want to get a list of ALL customers without filtering by SID? (y/n)"
-             << std::endl;
+                  << std::endl;
         // Waiting and check of the answer
         char chUserIn;
         std::cin.get(chUserIn);
@@ -137,13 +135,13 @@ int main(int argc, char* argv[]) {
     f_infile.open(cmdLineKey.sInputFile.data(), std::ios_base::in);
     if (!f_infile.is_open()) {
         std::cout << "Error: Input t-mail.log file is not found!"
-             << "Need a correct filename: -i "
-             << cmdLineKey.sInputFile << std::endl;
+                  << "Need a correct filename: -i "
+                  << cmdLineKey.sInputFile << std::endl;
         return (2);
     }
 
     // Create output file (truncate or append to existing)
-    if (cmdLineKey.bAppendMode == 1) {
+    if (cmdLineKey.bAppendMode) {
         f_outfile.open(cmdLineKey.sOutputFile.data(), std::ios_base::out | std::ios_base::app);
     } else {
         f_outfile.open(cmdLineKey.sOutputFile.data(), std::ios_base::out | std::ios_base::trunc);
@@ -156,7 +154,7 @@ int main(int argc, char* argv[]) {
     }
     //-----------[ PRINT LIST ALL PARAMETERS ]-------------
     // Print table with all used parameters if not selected quiet mode
-    if (cmdLineKey.bQuietMode == 0) {
+    if (!cmdLineKey.bQuietMode) {
         std::string sTmp("");
         dupCharToStr(sTmp, '=', 33);
         std::cout << sTmp << "[ PARAMETERS ]" << sTmp;
@@ -182,7 +180,7 @@ int main(int argc, char* argv[]) {
         dupCharToStr(sTmp, '-', 80);
 
         printf("%s\n| %s\n%s\n", sTmp.data(),
-                (cmdLineKey.bAppendMode == 1) ?
+                (cmdLineKey.bAppendMode) ?
                         "Output data will append to existing output file" :
                         "Output file will be overwritten if exist",
                 sTmp.data());
@@ -249,7 +247,7 @@ int main(int argc, char* argv[]) {
         f_infile.getline(lpLineBuffer, INPUT_LINE_BUFFER_LEN);
         sInputString = lpLineBuffer;
 
-        if (sInputString.find("Incoming call: CONNECT ", 0) != std::string::npos) {
+        if (sInputString.find("Incoming call: CONNECT", 0) != std::string::npos) {
             logFields.reset();
             logFields.bConnectIP = 1;
             logFields.sLocalDateTime = sInputString.substr(0, 14);
@@ -260,8 +258,8 @@ int main(int argc, char* argv[]) {
             }
             continue;
         } else {
-            if (logFields.bConnectIP == 1) {
-                if (logFields.bSysOp == 0 && sInputString.find("SysOp:") != std::string::npos) {
+            if (logFields.bConnectIP) {
+                if (!logFields.bSysOp && sInputString.find("SysOp:") != std::string::npos) {
                     logFields.sSysOp = sInputString.substr(
                             sInputString.find("SysOp:")+7,
                             sInputString.find_last_of(',')-(sInputString.find("SysOp:")+7));
@@ -269,17 +267,17 @@ int main(int argc, char* argv[]) {
                     continue;
                 }
 
-                if (logFields.bRemoteDate == 0 &&
-                        sInputString.find("Remote date") != std::string::npos) {
-                    logFields.sRemoteDateTime = sInputString.substr(
-                            sInputString.find("Remote date") + 20);
+                if (!logFields.bRemoteDate && sInputString.find("Remote date") != std::string::npos) {
+                    logFields.sRemoteDateTime = sInputString.substr(sInputString.find("Remote date") + 20);
                     logFields.bRemoteDate = 1;
                     continue;
                 }
 
-                if (logFields.bSystem == 0 && sInputString.find("System:") != std::string::npos) {
-                    logFields.sSID = sInputString.substr(sInputString.find("System:") + 8,
-                            sInputString.find(',')-(sInputString.find("System:") + 8));
+                if (!logFields.bSystem && sInputString.find("System:") != std::string::npos) {
+                    logFields.sSID = sInputString.substr(
+                                        sInputString.find("System:") + 8,
+                                        sInputString.find(',')-(sInputString.find("System:") + 8)
+                                        );
                     strToUpperCase(logFields.sSID);
 
                     if (!cmdLineKey.sMaskSID.empty() && logFields.sSID.compare(cmdLineKey.sMaskSID)) {
@@ -288,19 +286,20 @@ int main(int argc, char* argv[]) {
                     }
 
                     // Go to new line in the log file if not all fields been found
-                    if (logFields.bConnectIP == 0 && logFields.bRemoteDate == 0 &&
-                            logFields.bSysOp == 0 && logFields.bSystem == 0) continue;
+                    if (!logFields.bConnectIP && !logFields.bRemoteDate &&
+                            !logFields.bSysOp && !logFields.bSystem) continue;
 
                     f_outfile << logFields.sLocalDateTime << '#' << logFields.sSID << '#' << logFields.sIncomingIP
                             << '#' << logFields.sSysOp << '#' << logFields.sRemoteDateTime << std::endl;
                     logFields.reset();
                     iStatTotalConn++;
-                    if (cmdLineKey.bQuietMode == 0) {
+                    if (!cmdLineKey.bQuietMode) {
                         printf("\rCounter: [%10i]  Client: [%9s] %-80s",
-                                iStatTotalConn, logFields.sSID.data(), logFields.sSysOp.data());
+                                iStatTotalConn,
+                                logFields.sSID.data(),
+                                logFields.sSysOp.data()
+                                );
                     }
-
-                    continue;
                 }
             }
         }
