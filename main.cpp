@@ -352,9 +352,8 @@ void strToUpperCase(std::string & sStr) {
 
 // Duplicate char ch in string sStr uiDup times
 void dupCharToStr(std::string & sStr, char ch, unsigned int uiDup) {
-    while (uiDup) {
+    while (uiDup--) {
         sStr += ch;
-        uiDup--;
     }
     return;
 }
