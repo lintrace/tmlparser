@@ -147,7 +147,7 @@ int main(int argc, char* argv[]) {
         return (2);
     }
     //-----------[ PRINT LIST ALL PARAMETERS ]-------------
-    // Print table with all used parameters if not selected quiet mode
+    // Print table with all parameters if selected verbose mode
     if (cmdLineKey.bVerboseMode) {
         std::cout << dupCharToStr('=', 33) << "[ PARAMETERS ]" << dupCharToStr('=', 33);
         std::string sTmp = '+' + dupCharToStr('-', 17) + '+' + dupCharToStr('-', 61);
