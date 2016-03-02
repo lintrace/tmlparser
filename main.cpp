@@ -36,19 +36,19 @@ const unsigned int INPUT_LINE_BUFFER_LEN = 1024;
 
 int main(int argc, char* argv[]) {
 
-	// List of the arguments for command line
-	struct CommandLineArg {
-	    unsigned bVerboseMode:   1;
-	    unsigned bAppendMode:    1;
-	    std::string sInputFile;
-	    std::string sOutputFile;
-	    std::string sMaskSID;
-	    std::string sExcludeIP;
-	    CommandLineArg() {
-	        bVerboseMode = bAppendMode = 0;
-	        sInputFile = sOutputFile = sMaskSID = sExcludeIP = "";
-	    }
-	} cmdLineKey;
+    // List of the arguments for command line
+    struct CommandLineArg {
+    	unsigned bVerboseMode:   1;
+    	unsigned bAppendMode:    1;
+    	std::string sInputFile;
+    	std::string sOutputFile;
+    	std::string sMaskSID;
+    	std::string sExcludeIP;
+	CommandLineArg() {
+	    bVerboseMode = bAppendMode = 0;
+	    sInputFile = sOutputFile = sMaskSID = sExcludeIP = "";
+            }
+    } cmdLineKey;
 
     std::string sArgument = "";
 
