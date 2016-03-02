@@ -218,7 +218,7 @@ int main(int argc, char* argv[]) {
 
     // Create buffer for reading strings from input file
     char * lpLineBuffer = (char *) calloc(INPUT_LINE_BUFFER_LEN, sizeof(char));
-    std::string  sInputString = "";	 // String from input file (from buffer)
+    std::string  sInputString = "";  // String from input file (from buffer)
     unsigned int iStatTotalConn = 0; // Counter total connections of Customer
                                      // (equals the lines in output file)
 
@@ -235,8 +235,8 @@ int main(int argc, char* argv[]) {
             logFields.sLocalDateTime = sInputString.substr(0, 14);
             // Getting IP from 'CONNECTION'
             logFields.sIncomingIP = sInputString.substr(sInputString.find("TCP/IP/") + 7,
-            		                                    sInputString.find_last_of('/') - (sInputString.find("TCP/IP/") + 7 )
-														);
+            		                                sInputString.find_last_of('/') - (sInputString.find("TCP/IP/") + 7 )
+							);
 
             if (!cmdLineKey.sExcludeIP.empty() && sInputString.find(cmdLineKey.sExcludeIP)!=std::string::npos) {
                 logFields.reset();
