@@ -54,7 +54,7 @@ int main(int argc, char* argv[]) {
 
 	std::string sArgument = "";
 
-    // If the command-line arguments are not passed then exit with help output
+    // If command-line arguments are not passed then exit with help output
     if (argc == 1) {
         printUsage();
         return (1);
@@ -84,7 +84,7 @@ int main(int argc, char* argv[]) {
                 if ((argN+1)<argc && argv[argN+1][0]!='-'){
                     cmdLineKey.sExcludeIP = argv[++argN];
                 }
-            case 'd': // Delimiter for fields of output file
+            case 'd': // Delimiter for fields in output file
                 if ((argN+1)<argc && argv[argN+1][0]!='-'){
                     cmdLineKey.chDelimiter = argv[++argN][0];
                 }
@@ -139,7 +139,7 @@ int main(int argc, char* argv[]) {
     // Create output file (truncate or append to existing)
     std::ofstream f_outfile;
     if (cmdLineKey.bAppendMode) {
-        f_outfile.open(cmdLineKey.sOutputFile.data(), 
+        f_outfile.open(cmdLineKey.sOutputFile.data(),
                        std::ios_base::out | std::ios_base::app);
     } else {
         f_outfile.open(cmdLineKey.sOutputFile.data(),
@@ -147,7 +147,7 @@ int main(int argc, char* argv[]) {
     }
 
     if (!f_outfile.is_open()) {
-        std::cout << "Error: Could not create output file: " 
+        std::cout << "Error: Could not create output file: "
                   << cmdLineKey.sOutputFile << std::endl;
         f_infile.close();
         return (2);
@@ -220,7 +220,6 @@ int main(int argc, char* argv[]) {
         void reset()
         {
             bConnectIP = bSysOp = bRemoteDate = bSystem = 0;
-            return;
         }
     } logFields;
 
@@ -252,7 +251,7 @@ int main(int argc, char* argv[]) {
             continue;
         } else {
             if (logFields.bConnectIP) {
-            	// If connection was found we looking in log the other fields
+            	// If connection was found we looking in log for the other fields
                 if (!logFields.bSysOp && sInputString.find("SysOp:") != std::string::npos) {
                     logFields.sSysOp = sInputString.substr(
                             sInputString.find("SysOp:")+7,
@@ -280,16 +279,16 @@ int main(int argc, char* argv[]) {
                         continue;
                     }
 
-                    // Go to new line in the log file if not all fields been found
+                    // Go to the new line in the log if not all fields been found
                     if (!logFields.bConnectIP && !logFields.bRemoteDate &&
                             !logFields.bSysOp && !logFields.bSystem) continue;
 
-                    // All fields been found. Write at the back of the output file.
+                    // All fields been found. Write line in output file.
                     f_outfile << logFields.sLocalDateTime << cmdLineKey.chDelimiter
-                    		  << logFields.sSID << cmdLineKey.chDelimiter
-							  << logFields.sIncomingIP << cmdLineKey.chDelimiter
+                              << logFields.sSID << cmdLineKey.chDelimiter
+                              << logFields.sIncomingIP << cmdLineKey.chDelimiter
                               << logFields.sSysOp << cmdLineKey.chDelimiter
-							  << logFields.sRemoteDateTime << std::endl;
+                              << logFields.sRemoteDateTime << std::endl;
                     logFields.reset();
                     iStatTotalConn++;
                     if (cmdLineKey.bVerboseMode) {
@@ -297,7 +296,7 @@ int main(int argc, char* argv[]) {
                                 iStatTotalConn,
                                 logFields.sSID.data(),
                                 logFields.sSysOp.data()
-                                );
+															);
                     }
                 }
             }
@@ -329,8 +328,8 @@ void printUsage(void) {
          << "   -s SID         specify filter by SID for the input log file" << std::endl
          << "   -e IP          specify filter to EXCLUDE IP from the input log file" << std::endl
          << "                  to example: -e 10.0.0. will exclude all IP in range 10.0.0.xxx" << std::endl
-		 << "                  is useful to exclude local connections to server" << std::endl
-		 << "   -d             delimiter of the fields in output file ('#' by default)" << std::endl
+         << "                  is useful to exclude local connections to server" << std::endl
+         << "   -d             delimiter of the fields in output file ('#' by default)" << std::endl
          << std::endl
          << "   -v             verbose mode (give more information about each stage)" << std::endl
          << std::endl
@@ -361,9 +360,7 @@ void strToUpperCase(std::string & sStr) {
 //}
 
 std::string dupCharToStr(char ch, unsigned int uiDup) {
-	std::string _sTmp;
-    while (uiDup--) {
-        _sTmp += ch;
-    }
+    std::string _sTmp;
+    while (uiDup--) { _sTmp += ch; }
     return _sTmp;
 }
