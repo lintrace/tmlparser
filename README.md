@@ -21,6 +21,7 @@ See the GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>
 
+```
 -------------------------------------------------------------
 
 TMLParser usage:
@@ -133,3 +134,4 @@ Sample of T-Mail.log file for understanding situation:
 
 	  27/02 13:18:46 System: 80000001, Moscow, Russia
 	                         ^^^^^^^_  This is a SID (80000001)
+	```
